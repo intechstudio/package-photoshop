@@ -74,7 +74,7 @@ jobs:
           cd components
           npm install
           npm run build
-          
+
       - name: Build photoshop plugin
         run: |
           cd photoshop-plugin

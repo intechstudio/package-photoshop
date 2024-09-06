@@ -4,6 +4,7 @@ import { PhotoshopServiceInterface } from "../photoshop-service-interface";
 import tools from "./tools";
 import imageAdjustment from "./image-adjustment";
 import adjustmentLayer from "./adjustment-layer";
+import { EditorServiceInterface } from "../editor-service-interface";
 
 interface PhotoshopCommand {
   type: string;
@@ -13,16 +14,31 @@ interface PhotoshopCommand {
 
 class PhotoshopCommandHandler {
   private _photoshopService!: PhotoshopServiceInterface;
+  private _editorService!: EditorServiceInterface;
 
-  public get photoshopService() {
-    return this._photoshopService;
-  }
+  public initializeCommunication(
+    photoshopService: PhotoshopServiceInterface,
+    editorService: EditorServiceInterface,
+  ) {
+    this._photoshopService = photoshopService;
+    this._editorService = editorService;
+    tools.initTools(photoshopService);
+    imageAdjustment.initImageAdjustments(photoshopService);
+    adjustmentLayer.initeAdjustmentLayer(photoshopService);
 
-  public set photoshopService(service: PhotoshopServiceInterface) {
-    this._photoshopService = service;
-    tools.initTools(service);
-    imageAdjustment.initImageAdjustments(service);
-    adjustmentLayer.initeAdjustmentLayer(service);
+    photoshopService.addActionNotificationListener(
+      ["set"],
+      (name: any, descriptor: any) => {
+        if (descriptor.to?.masterDiameter && descriptor.to._obj === "brush") {
+          editorService.sendMessageToEditor(
+            JSON.stringify({
+              type: "execute-lua-script",
+              script: `<?lua --[[@cb]] brush_size(${descriptor.to.masterDiameter._value}) ?>`,
+            }),
+          );
+        }
+      },
+    );
   }
 
   private static _instance: PhotoshopCommandHandler;
@@ -37,12 +53,12 @@ class PhotoshopCommandHandler {
   async handleCommand(params: any) {
     switch (params[0]) {
       case "menu":
-        await this.photoshopService.performMenuCommand(Number(params[1]));
+        await this._photoshopService.performMenuCommand(Number(params[1]));
         break;
       case "json":
-        await this.photoshopService.executeActions(params[1]);
+        await this._photoshopService.executeActions(JSON.parse(params[1]));
       case "content-fill":
-        await this.photoshopService.executeActions([
+        await this._photoshopService.executeActions([
           {
             _obj: "fill",
             using: {

@@ -125,10 +125,7 @@ exports.sendMessage = async function (args) {
 };
 
 function handlePhotoshopMessage(message) {
-  /*let data = JSON.parse(message);
-  const script = `<?lua --[[@glp]] glp(1,1,${data.brushDiameter}) ?>`
-  controller.sendMessageToEditor({
-    type: "execute-lua-script",
-    script,
-  });*/
+  let data = JSON.parse(message);
+  console.log({ data });
+  controller.sendMessageToEditor(data);
 }

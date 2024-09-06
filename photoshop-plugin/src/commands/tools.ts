@@ -224,6 +224,7 @@ class Tools {
 
   private lastToolPropertyCache: Date | undefined = undefined;
   private lastToolPropertyCacheDate: any = undefined;
+  private toolPropertyRequest: Promise<any> | undefined;
   private async _getCurrentToolProperties() {
     if (
       this.lastToolPropertyCacheDate &&
@@ -232,21 +233,30 @@ class Tools {
       this.lastToolPropertyCacheDate = new Date();
       return this.lastToolPropertyCache;
     }
-    let result = await this._photoshopService.executeActions([
-      {
-        _obj: "get",
-        _target: {
-          _ref: [
-            { _property: "currentToolOptions" },
-            { _ref: "application", _enum: "ordinal", _value: "targetEnum" },
-          ],
-        },
-      },
-    ]);
-    this.lastToolPropertyCache = result[0];
-    this.lastToolPropertyCacheDate = new Date();
+    if (!this.toolPropertyRequest) {
+      this.toolPropertyRequest = new Promise(async (resolve) => {
+        let result = await this._photoshopService.executeActions([
+          {
+            _obj: "get",
+            _target: {
+              _ref: [
+                { _property: "currentToolOptions" },
+                { _ref: "application", _enum: "ordinal", _value: "targetEnum" },
+              ],
+            },
+          },
+        ]);
+        this.lastToolPropertyCache = result[0];
+        this.lastToolPropertyCacheDate = new Date();
 
-    return result[0];
+        resolve(result[0]);
+      });
+      let result = await this.toolPropertyRequest;
+      this.toolPropertyRequest = undefined;
+      return result;
+    } else {
+      return await this.toolPropertyRequest;
+    }
   }
 
   private _getClampedValue(value: number, min: number, max: number) {

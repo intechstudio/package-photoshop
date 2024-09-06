@@ -33,7 +33,7 @@ fs.mkdirSync(`${subfolder}/components`);
 fs.renameSync("components/dist", `${subfolder}/components/dist`);
 
 //Copy ccx file
-fs.renameSync("photoshop-plugin/ccx/f6c64709_PS.ccx", "f6c64709_PS.ccx");
+fs.renameSync("photoshop-plugin/ccx/f6c64709_PS.ccx", `${subfolder}/f6c64709_PS.ccx`);
 
 output.on("close", () => {
   console.log("Archive created successfully.");

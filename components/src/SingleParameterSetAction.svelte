@@ -1,6 +1,6 @@
 <svelte:options customElement={{tag: 'single-parameter-set-action', shadow: 'none'}} />
 <script>
-  import { AtomicInput, AtomicSuggestions } from "@intechstudio/grid-uikit";
+  import { AtomicInput, AtomicSuggestions, MeltCheckbox } from "@intechstudio/grid-uikit";
     import { onMount } from "svelte";
   let parameterType = "";
   let parameterId = "";
@@ -80,7 +80,7 @@
   bind:this={ref}
 >
     <div class="w-full flex">
-        <div class="atomicInput" style="width: 40%;">
+        <div class="atomicInput" style="width: 50%;">
             <div class="text-gray-500 text-sm pb-1">Parameter ID</div>
             <AtomicInput
                 inputValue={parameterId}
@@ -90,7 +90,7 @@
                     parameterId = e.detail;
                 }}/>
         </div>
-        <div class="atomicInput" style="width: 40%;">
+        <div class="atomicInput" style="width: 50%;">
             <div class="text-gray-500 text-sm pb-1">Parameter value</div>
             <AtomicInput
                 inputValue={parameterValue}
@@ -100,13 +100,10 @@
                     parameterValue = e.detail;
                 }}/>
         </div>
-        {#if parameterType != "image-adjustment"}  
-          <div style="width: 20%;">
-            <div class="text-gray-500 text-sm pb-1">Relative</div>
-            <input type="checkbox" bind:checked={isRelativeMode}/>
-          </div>
-        {/if}
     </div>
 
     <AtomicSuggestions bind:component={suggestionElement} />
+    {#if parameterType != "image-adjustment"}  
+      <MeltCheckbox bind:target={isRelativeMode} title={"Relative Mode"} />
+    {/if}
 </single-parameter-set>

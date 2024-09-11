@@ -5,6 +5,8 @@ const WebSocket = require("ws");
 let wss = undefined;
 let photoshopWs = undefined;
 let controller;
+let preferenceMessagePort = undefined;
+let clientConnected = false;
 
 exports.loadPackage = async function (gridController, persistedData) {
   controller = gridController;
@@ -95,9 +97,12 @@ exports.loadPackage = async function (gridController, persistedData) {
     photoshopWs = ws;
 
     ws.on("message", handlePhotoshopMessage);
+    clientConnected = true;
+    notifyStatusChange();
 
     ws.on("close", () => {
-      console.log("Client disconnected");
+      clientConnected = false;
+      notifyStatusChange();
     });
   });
 };
@@ -105,9 +110,16 @@ exports.loadPackage = async function (gridController, persistedData) {
 exports.unloadPackage = async function () {
   photoshopWs?.close();
   wss?.close();
+  preferenceMessagePort?.close();
 };
 
-exports.addMessagePort = async function (port) {};
+exports.addMessagePort = async function (port) {
+  preferenceMessagePort = port;
+  port.on("close", () => {
+    preferenceMessagePort = undefined;
+  });
+  notifyStatusChange();
+};
 
 exports.sendMessage = async function (args) {
   console.log({ args });
@@ -117,15 +129,17 @@ exports.sendMessage = async function (args) {
       data: args,
     }),
   );
-  /*const script = `<?lua --[[@glp]] glp(1,1,${args[1]}) ?>`
-  controller.sendMessageToEditor({
-    type: "execute-lua-script",
-    script,
-  });*/
 };
 
 function handlePhotoshopMessage(message) {
   let data = JSON.parse(message);
   console.log({ data });
   controller.sendMessageToEditor(data);
+}
+
+function notifyStatusChange() {
+  preferenceMessagePort.postMessage({
+    type: "clientStatus",
+    clientConnected,
+  });
 }

@@ -1,6 +1,7 @@
 let fs = require("fs");
 let path = require("path");
 const WebSocket = require("ws");
+const openExplorer = require("open-file-explorer");
 
 let wss = undefined;
 let photoshopWs = undefined;
@@ -118,6 +119,13 @@ exports.addMessagePort = async function (port) {
   port.on("close", () => {
     preferenceMessagePort = undefined;
   });
+  port.on("message", (e) => {
+    console.log({ e });
+    if (e.data.type === "open-plugin-folder") {
+      openExplorer(__dirname);
+    }
+  });
+  port.start();
   notifyStatusChange();
 };
 

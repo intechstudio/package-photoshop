@@ -13,6 +13,7 @@
     "preferenceComponent": "photoshop-preference"
   },
   "dependencies": {
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "open-file-explorer": "^1.0.2"
   }
 }

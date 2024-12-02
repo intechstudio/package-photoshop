@@ -1,3 +1,4 @@
 import Preferences from "./Preferences.svelte";
-import SingleEventAction from "./SingleEventAction.svelte";
+import SingleEventStaticAction from "./SingleEventStaticAction.svelte";
 import SingleParameterSetAction from "./SingleParameterSetAction.svelte";
+import SingleEventDynamicAction from "./SingleEventDynamicAction.svelte";

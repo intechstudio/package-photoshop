@@ -6,7 +6,7 @@
   let currentlyConnected = false;
 
   // @ts-ignore
-  const messagePort = createPackageMessagePort("package-photoshop");
+  const messagePort = createPackageMessagePort("package-photoshop", "preferences");
 
 
   onMount(() => {

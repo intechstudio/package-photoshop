@@ -26,7 +26,7 @@ class PhotoshopCommandHandler {
     imageAdjustment.initImageAdjustments(photoshopService);
     adjustmentLayer.initeAdjustmentLayer(photoshopService);
 
-    photoshopService.addActionNotificationListener(
+    /*photoshopService.addActionNotificationListener(
       ["set"],
       (name: any, descriptor: any) => {
         if (descriptor.to?.masterDiameter && descriptor.to._obj === "brush") {
@@ -38,7 +38,7 @@ class PhotoshopCommandHandler {
           );
         }
       },
-    );
+    );*/
   }
 
   private static _instance: PhotoshopCommandHandler;

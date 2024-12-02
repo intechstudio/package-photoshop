@@ -8,6 +8,7 @@ let photoshopWs = undefined;
 let controller;
 let preferenceMessagePort = undefined;
 let clientConnected = false;
+let dynamicSuggestionData = {};
 
 exports.loadPackage = async function (gridController, persistedData) {
   controller = gridController;
@@ -41,7 +42,7 @@ exports.loadPackage = async function (gridController, persistedData) {
     short: "xpsms",
     displayName: "Menu Shortcut",
     defaultLua: 'gps("package-photoshop", "menu", "32")',
-    actionComponent: "single-event-action",
+    actionComponent: "single-event-dynamic-action",
   });
 
   createPhotoshopAction({
@@ -60,7 +61,7 @@ exports.loadPackage = async function (gridController, persistedData) {
     short: "xpsst",
     displayName: "Select Tool",
     defaultLua: 'gps("package-photoshop", "select-tool", "paintbrushTool")',
-    actionComponent: "single-event-action",
+    actionComponent: "single-event-dynamic-action",
   });
   createPhotoshopAction({
     short: "xpstp",
@@ -80,7 +81,7 @@ exports.loadPackage = async function (gridController, persistedData) {
     displayName: "Create Adjustment Layer",
     defaultLua:
       'gps("package-photoshop", "create-adjustment", "brightnessEvent")',
-    actionComponent: "single-event-action",
+    actionComponent: "single-event-static-action",
   });
   createPhotoshopAction({
     short: "xpsaal",
@@ -114,19 +115,28 @@ exports.unloadPackage = async function () {
   preferenceMessagePort?.close();
 };
 
-exports.addMessagePort = async function (port) {
-  preferenceMessagePort = port;
-  port.on("close", () => {
-    preferenceMessagePort = undefined;
-  });
-  port.on("message", (e) => {
-    console.log({ e });
-    if (e.data.type === "open-plugin-folder") {
-      openExplorer(__dirname);
-    }
-  });
-  port.start();
-  notifyStatusChange();
+exports.addMessagePort = async function (port, senderId) {
+  if (senderId == "preferences") {
+    preferenceMessagePort = port;
+    port.on("close", () => {
+      preferenceMessagePort = undefined;
+    });
+    port.on("message", (e) => {
+      console.log({ e });
+      if (e.data.type === "open-plugin-folder") {
+        openExplorer(__dirname);
+      }
+    });
+    port.start();
+    notifyStatusChange();
+  } else if (senderId == "dynamic-action") {
+    port.start();
+    port.postMessage({
+      type: "init-suggestions",
+      suggestions: dynamicSuggestionData,
+    });
+    port.close();
+  }
 };
 
 exports.sendMessage = async function (args) {
@@ -141,12 +151,16 @@ exports.sendMessage = async function (args) {
 
 function handlePhotoshopMessage(message) {
   let data = JSON.parse(message);
-  console.log({ data });
-  controller.sendMessageToEditor(data);
+  console.log(data.type);
+  if (data.type === "set-dynamic-suggestions") {
+    dynamicSuggestionData = data.suggestions;
+  } else {
+    controller.sendMessageToEditor(data);
+  }
 }
 
 function notifyStatusChange() {
-  preferenceMessagePort.postMessage({
+  preferenceMessagePort?.postMessage({
     type: "clientStatus",
     clientConnected,
   });

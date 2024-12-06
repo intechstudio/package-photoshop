@@ -14,7 +14,7 @@ exports.loadPackage = async function (gridController, persistedData) {
   controller = gridController;
   let photoshopIconSvg = fs.readFileSync(
     path.resolve(__dirname, "photoshop_icon.svg"),
-    { encoding: "utf-8" },
+    { encoding: "utf-8" }
   );
 
   let actionId = 0;
@@ -43,19 +43,6 @@ exports.loadPackage = async function (gridController, persistedData) {
     displayName: "Menu Shortcut",
     defaultLua: 'gps("package-photoshop", "menu", "32")',
     actionComponent: "single-event-dynamic-action",
-  });
-
-  createPhotoshopAction({
-    short: "xpscf",
-    displayName: "Content-aware fill",
-    defaultLua: 'gps("package-photoshop", "content-fill")',
-    toggleable: false,
-  });
-  createPhotoshopAction({
-    short: "xpstt",
-    displayName: "Toggle previous/current tool",
-    defaultLua: 'gps("package-photoshop", "toggle-tool")',
-    toggleable: false,
   });
   createPhotoshopAction({
     short: "xpsst",
@@ -89,6 +76,12 @@ exports.loadPackage = async function (gridController, persistedData) {
     defaultLua:
       'gps("package-photoshop", "adjust-adjustment", "brightness", val, 1)',
     actionComponent: "single-parameter-set-action",
+  });
+  createPhotoshopAction({
+    short: "xpsqa",
+    displayName: "Quick Action",
+    defaultLua: 'gps("package-photoshop", "quick-action", "switch-colors")',
+    actionComponent: "single-event-static-action",
   });
 
   wss = new WebSocket.Server({ port: 3542 });
@@ -145,7 +138,7 @@ exports.sendMessage = async function (args) {
     JSON.stringify({
       event: "message",
       data: args,
-    }),
+    })
   );
 };
 

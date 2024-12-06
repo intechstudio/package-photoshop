@@ -26,7 +26,7 @@ export function notifyEditorAfterBuildPlugin(): PluginOption {
               event: "components-build-complete",
               id: "package-photoshop",
               rootPath: path.resolve(__dirname, ".."),
-            }),
+            })
           );
           ws.close();
           clearTimeout(timeout);

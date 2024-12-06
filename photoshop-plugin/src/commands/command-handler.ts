@@ -1,5 +1,12 @@
 import { ActionDescriptor } from "photoshop/dom/CoreModules";
-import { psAppRef } from "../lib/variables";
+import {
+  contentAwareFill,
+  createLayerMask,
+  mergeVisibleDuplicate,
+  psAppRef,
+  refreshToolUi,
+  switchColors,
+} from "../lib/variables";
 import { PhotoshopServiceInterface } from "../photoshop-service-interface";
 import tools from "./tools";
 import imageAdjustment from "./image-adjustment";
@@ -18,7 +25,7 @@ class PhotoshopCommandHandler {
 
   public initializeCommunication(
     photoshopService: PhotoshopServiceInterface,
-    editorService: EditorServiceInterface,
+    editorService: EditorServiceInterface
   ) {
     this._photoshopService = photoshopService;
     this._editorService = editorService;
@@ -57,34 +64,8 @@ class PhotoshopCommandHandler {
         break;
       case "json":
         await this._photoshopService.executeActions(JSON.parse(params[1]));
-      case "content-fill":
-        await this._photoshopService.executeActions([
-          {
-            _obj: "fill",
-            using: {
-              _enum: "fillContents",
-              _value: "contentAware",
-            },
-            opacity: {
-              _unit: "percentUnit",
-              _value: 100,
-            },
-            mode: {
-              _enum: "blendMode",
-              _value: "normal",
-            },
-            _isCommand: true,
-            _options: {
-              dialogOptions: "dontDisplay",
-            },
-          },
-        ]);
-        break;
       case "tool-parameter":
         await tools.setToolParameters(params[1], params[2], params[3]);
-        break;
-      case "toggle-tool":
-        await tools.setPreviousTool();
         break;
       case "select-tool":
         await tools.setTool(params[1]);
@@ -144,6 +125,30 @@ class PhotoshopCommandHandler {
             });
             break;
         }
+      case "quick-action":
+        switch (params[1]) {
+          case "toggle-tool":
+            await tools.setPreviousTool();
+            break;
+          case "content-fill":
+            await this._photoshopService.executeActions([contentAwareFill]);
+            break;
+          case "switch-colors":
+            await this._photoshopService.executeActions([
+              switchColors,
+              refreshToolUi,
+            ]);
+            break;
+          case "merge-visible-duplicate":
+            await this._photoshopService.executeActions([
+              mergeVisibleDuplicate,
+            ]);
+            break;
+          case "create-layer-mask":
+            await this._photoshopService.executeActions([createLayerMask]);
+            break;
+        }
+        break;
         break;
     }
   }

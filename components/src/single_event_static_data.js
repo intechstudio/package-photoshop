@@ -20,4 +20,11 @@ export default {
     { info: "Gradient Map", value: "gradientMapClass" },
     { info: "Selective Color", value: "selectiveColor" },
   ],
+  "quick-action": [
+    { info: "Switch primary/secondary color", value: "switch-colors" },
+    { info: "Merge visible layers on top", value: "merge-visible-duplicate" },
+    { info: "Create layer mask", value: "create-layer-mask" },
+    { info: "Content-aware auto fill", value: "content-fill" },
+    { info: "Switch last/current tool", value: "toggle-tool" },
+  ],
 };

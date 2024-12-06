@@ -4,7 +4,8 @@
   "description": "Photoshop package",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write ."
   },
   "author": "",
   "license": "ISC",
@@ -15,5 +16,9 @@
   "dependencies": {
     "ws": "^8.18.0",
     "open-file-explorer": "^1.0.2"
+  },
+  "devDependencies": {
+    "prettier": "2.8.8",
+    "prettier-plugin-svelte": "^2.10.1"
   }
 }

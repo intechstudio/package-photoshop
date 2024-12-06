@@ -12,7 +12,7 @@ class AdjustmentLayer {
   }
 
   public async initeAdjustmentLayer(
-    photoshopService: PhotoshopServiceInterface,
+    photoshopService: PhotoshopServiceInterface
   ) {
     this.photoshopService = photoshopService;
   }

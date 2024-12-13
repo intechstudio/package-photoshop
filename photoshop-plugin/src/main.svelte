@@ -2,7 +2,10 @@
   import { photoshop } from "./globals";
   import { onMount } from "svelte";
   import { batchPlayInModal, getPropety } from "./lib/uxp";
-  import { ActionDescriptor } from "photoshop/dom/CoreModules";
+  import {
+    ActionDescriptor,
+    BatchPlayCommandOptions,
+  } from "photoshop/dom/CoreModules";
   import photoshopCommandHandler from "./commands/command-handler";
   import { psAppRef } from "./lib/variables";
 
@@ -58,14 +61,14 @@
             // name == '' if it's starting the recursion
             nextName = element.name;
           } else {
-            nextName = name + " | " + element.name;
+            nextName = name + "/" + element.name;
           }
           crawlSubmenu(nextName, element.submenu);
         } else if (element.visible) {
           let menuName: string =
             (element.name ?? "") == "" ? element.title : element.name;
           if ((name ?? "") !== "") {
-            menuName = `${name} | ${menuName}`;
+            menuName = `${name}/${menuName}`;
           }
           menuName.replace("&", "");
           commandCollection.push({
@@ -79,14 +82,29 @@
     crawlSubmenu("", menuBar);
   }
 
+  async function tryInitializeCommandInfos() {
+    if (uiInfo.length == 0) {
+      await buildUiInfo();
+    }
+    if (commandCollection.length == 0) {
+      await buildCommandCollection();
+    }
+
+    uiInfo.forEach((element) => {
+      photoshopCommandHandler.toolInfo.set(element.value, element.info);
+    });
+    commandCollection.forEach((element) => {
+      photoshopCommandHandler.menuInfo.set(element.value, element.info);
+    });
+  }
+
   photoshopCommandHandler.initializeCommunication(
     {
       async executeActions(actions: ActionDescriptor[]): Promise<any> {
-        const batchPlayOptions = {
+        const batchPlayOptions: BatchPlayCommandOptions = {
           synchronousExecution: false,
           propagateErrorToDefaultHandler: true,
         };
-        console.log({ actions });
         return await batchPlayInModal(actions, batchPlayOptions);
       },
 
@@ -125,17 +143,23 @@
 
       await buildUiInfo();
       await buildCommandCollection();
-      if (webSocketClient?.readyState === WebSocket.OPEN) {
-        webSocketClient!.send(
-          JSON.stringify({
-            type: "set-dynamic-suggestions",
-            suggestions: {
-              "select-tool": uiInfo,
-              menu: commandCollection,
-            },
-          })
-        );
+      if (uiInfo.length == 0 || commandCollection.length == 0) {
+        return;
       }
+
+      if (webSocketClient?.readyState !== WebSocket.OPEN) {
+        return;
+      }
+
+      webSocketClient!.send(
+        JSON.stringify({
+          type: "set-dynamic-suggestions",
+          suggestions: {
+            "select-tool": uiInfo,
+            menu: commandCollection,
+          },
+        })
+      );
     });
 
     webSocketClient.addEventListener("close", function (event) {
@@ -153,24 +177,30 @@
       connectToWebSocket();
     });
 
-    webSocketClient.addEventListener("message", function (event) {
+    webSocketClient.addEventListener("message", async function (event) {
       const EDITOR_PACKET = JSON.parse(event.data);
 
       switch (EDITOR_PACKET["event"]) {
-        case "message":
+        case "command":
           if (EDITOR_PACKET.data != undefined) {
-            const decodedMessage = EDITOR_PACKET.data;
-            console.log(decodedMessage);
-            callMessageHandler(decodedMessage);
+            const commandParams = EDITOR_PACKET.data;
+            const commandMode = EDITOR_PACKET.commandMode;
+            if (
+              commandMode.includes("overlay") &&
+              (photoshopCommandHandler.menuInfo.size == 0 ||
+                photoshopCommandHandler.toolInfo.size == 0)
+            ) {
+              await tryInitializeCommandInfos();
+            }
+            await photoshopCommandHandler.handleCommand(
+              commandParams,
+              commandMode
+            );
           }
           break;
         default:
       }
     });
-  }
-
-  async function callMessageHandler(params: any) {
-    await photoshopCommandHandler.handleCommand(params);
   }
 
   onMount(async () => {

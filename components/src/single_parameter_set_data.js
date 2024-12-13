@@ -24,5 +24,14 @@ export default {
     { info: "Exposure", value: "exposure" },
     { info: "Offset", value: "offset" },
     { info: "Gamma", value: "gamma" },
+    { info: "Vibrance", value: "vibrance" },
+    { info: "Vibrance Saturation", value: "vibranceSaturation" },
+    { info: "Hue", value: "hue" },
+    { info: "Saturation", value: "saturation" },
+    { info: "Lightness", value: "lightness" },
+  ],
+  "custom-keys": [
+    { info: "Overlay Control Key", value: "overlay-control" },
+    { info: "Spacebar Shortcut", value: "spacebar-shortcut" },
   ],
 };

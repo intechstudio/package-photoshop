@@ -3,14 +3,13 @@
 />
 
 <script>
-  import { AtomicInput, AtomicSuggestions } from "@intechstudio/grid-uikit";
+  import { MeltCombo } from "@intechstudio/grid-uikit";
   import { onMount } from "svelte";
   import data from "./single_event_static_data.js";
   let eventType = "";
   let eventId = "";
   let currentCodeValue = "";
   let ref;
-  let suggestionElement;
   $: suggestions = data[eventType];
 
   function handleConfigUpdate(config) {
@@ -34,19 +33,20 @@
   });
 
   $: eventId,
-    (function () {
-      var code = `gps("package-photoshop", "${eventType}", "${eventId}")`;
-      if (currentCodeValue != code) {
-        currentCodeValue = code;
-        const event = new CustomEvent("updateCode", {
-          bubbles: true,
-          detail: { script: String(code) },
-        });
-        if (ref) {
-          ref.dispatchEvent(event);
+    eventType &&
+      (function () {
+        var code = `gps("package-photoshop", "${eventType}", "${eventId}")`;
+        if (currentCodeValue != code) {
+          currentCodeValue = code;
+          const event = new CustomEvent("updateCode", {
+            bubbles: true,
+            detail: { script: String(code) },
+          });
+          if (ref) {
+            ref.dispatchEvent(event);
+          }
         }
-      }
-    })();
+      })();
 </script>
 
 <single-event
@@ -54,18 +54,12 @@
   bind:this={ref}
 >
   <div class="w-full flex">
-    <div class="atomicInput">
-      <div class="text-gray-500 text-sm pb-1">Parameter ID</div>
-      <AtomicInput
-        inputValue={eventId}
-        {suggestions}
-        suggestionTarget={suggestionElement}
-        on:change={(e) => {
-          eventId = e.detail;
-        }}
-      />
-    </div>
+    <MeltCombo
+      title={"Parameter ID"}
+      bind:value={eventId}
+      {suggestions}
+      searchable={true}
+      size={"full"}
+    />
   </div>
-
-  <AtomicSuggestions bind:component={suggestionElement} />
 </single-event>

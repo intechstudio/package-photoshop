@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body,
+      html {
+        height: 100%;
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0); /* Transparent background */
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modern-box {
+        position: fixed;
+        bottom: 10%;
+        width: 80%;
+        max-width: 300px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        color: #333;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="modern-box" id="textbox" />
+    <script>
+      const textbox = document.getElementById("textbox");
+      let hideTimeoutId;
+      textbox.style.visibility = "hidden";
+
+      window.onmessage = (event) => {
+        const [port] = event.ports;
+        port.onmessage = (e) => {
+          let data = e.data;
+          textbox.style.visibility = "visible";
+          textbox.innerHTML = data.info;
+
+          clearTimeout(hideTimeoutId);
+          hideTimeoutId = setTimeout(() => {
+            textbox.style.visibility = "hidden";
+          }, 3000);
+        };
+        port.start();
+      };
+    </script>
+  </body>
+</html>

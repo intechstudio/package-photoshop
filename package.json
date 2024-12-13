@@ -14,8 +14,9 @@
     "preferenceComponent": "photoshop-preference"
   },
   "dependencies": {
-    "ws": "^8.18.0",
-    "open-file-explorer": "^1.0.2"
+    "@paymoapp/active-window": "^2.1.1",
+    "open-file-explorer": "^1.0.2",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "prettier": "2.8.8",

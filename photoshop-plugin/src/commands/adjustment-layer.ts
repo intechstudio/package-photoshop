@@ -18,7 +18,7 @@ class AdjustmentLayer {
   }
 
   public async createLayer(type: string) {
-    await this.photoshopService.executeActions([
+    return await this.photoshopService.executeActions([
       {
         _obj: "make",
         _target: { _ref: "adjustmentLayer" },
@@ -38,17 +38,19 @@ class AdjustmentLayer {
   }) {
     const currentAdjustment = await this.getCurrentAdjustmentLayer();
     if (!currentAdjustment) return;
-    let newBrightness =
-      (data.brightness ?? 0) +
-      (data.isRelative || data.brightness == undefined
-        ? currentAdjustment.brightness
-        : 0);
-    let newContrast =
-      (data.contrast ?? 0) +
-      (data.isRelative || data.contrast == undefined
-        ? currentAdjustment.center
-        : 0);
-    await this.modifyAdjustmentLayer({
+
+    let newBrightness = this._getNewValue(
+      currentAdjustment.brightness,
+      data.brightness,
+      data.isRelative
+    );
+    let newContrast = this._getNewValue(
+      currentAdjustment.center,
+      data.contrast,
+      data.isRelative
+    );
+
+    return await this.modifyAdjustmentLayer({
       _obj: "brightnessEvent",
       brightness: newBrightness,
       center: newContrast,
@@ -63,28 +65,94 @@ class AdjustmentLayer {
   }) {
     const currentAdjustment = await this.getCurrentAdjustmentLayer();
     if (!currentAdjustment) return;
-    let newExposure =
-      (data.exposure ?? 0) +
-      (data.isRelative || data.exposure == undefined
-        ? currentAdjustment.exposure
-        : 0);
-    let newOffset =
-      (data.offset ?? 0) +
-      (data.isRelative || data.offset == undefined
-        ? currentAdjustment.offset
-        : 0);
-    let newGamma =
-      (data.gamma ?? 0) +
-      (data.isRelative || data.gamma == undefined
-        ? currentAdjustment.gammaCorrection
-        : 0);
 
-    await this.modifyAdjustmentLayer({
+    let newExposure = this._getNewValue(
+      currentAdjustment.exposure,
+      data.exposure,
+      data.isRelative
+    );
+    let newOffset = this._getNewValue(
+      currentAdjustment.offset,
+      data.offset,
+      data.isRelative
+    );
+    let newGamma = this._getNewValue(
+      currentAdjustment.gammaCorrection,
+      data.gamma,
+      data.isRelative
+    );
+
+    return await this.modifyAdjustmentLayer({
       _obj: "exposure",
       presetKind: { _enum: "presetKindType", _value: "presetKindCustom" },
       exposure: newExposure,
       offset: newOffset,
       gammaCorrection: newGamma,
+    });
+  }
+
+  public async modifyVibranceSaturation(data: {
+    vibrance?: number;
+    saturation?: number;
+    isRelative: boolean;
+  }) {
+    const currentAdjustment = await this.getCurrentAdjustmentLayer();
+    if (!currentAdjustment) return;
+
+    let newVibrance = this._getNewValue(
+      currentAdjustment.vibrance,
+      data.vibrance,
+      data.isRelative
+    );
+    let newSaturation = this._getNewValue(
+      currentAdjustment.saturation,
+      data.saturation,
+      data.isRelative
+    );
+    return await this.modifyAdjustmentLayer({
+      _obj: "vibrance",
+      vibrance: newVibrance,
+      saturation: newSaturation,
+    });
+  }
+
+  public async modifyHueSaturationLightness(data: {
+    hue?: number;
+    saturation?: number;
+    lightness?: number;
+    isRelative: boolean;
+  }) {
+    const currentAdjustment = await this.getCurrentAdjustmentLayer();
+    if (!currentAdjustment) return;
+
+    let newHue = this._getNewValue(
+      currentAdjustment.adjustment[0].hue,
+      data.hue,
+      data.isRelative
+    );
+    let newSaturation = this._getNewValue(
+      currentAdjustment.adjustment[0].saturation,
+      data.saturation,
+      data.isRelative
+    );
+    let newLightness = this._getNewValue(
+      currentAdjustment.adjustment[0].lightness,
+      data.lightness,
+      data.isRelative
+    );
+    console.log({ currentAdjustment, data });
+
+    return await this.modifyAdjustmentLayer({
+      _obj: "hueSaturation",
+      presetKind: { _enum: "presetKindType", _value: "presetKindCustom" },
+      adjustment: [
+        {
+          _obj: "hueSatAdjustmentV2",
+          hue: newHue,
+          lightness: newLightness,
+          saturation: newSaturation,
+        },
+      ],
     });
   }
 
@@ -109,7 +177,7 @@ class AdjustmentLayer {
   }
 
   private async modifyAdjustmentLayer(to: object) {
-    await this.photoshopService.executeActions([
+    return await this.photoshopService.executeActions([
       {
         _obj: "set",
         _target: {
@@ -121,6 +189,17 @@ class AdjustmentLayer {
         _options: { dialogOptions: "silent" },
       },
     ]);
+  }
+
+  private _getNewValue(
+    originalValue: number | undefined,
+    newValue: number | undefined,
+    isRelative: boolean
+  ) {
+    if (!isRelative) {
+      return newValue ?? 0;
+    }
+    return (originalValue ?? 0) + (newValue ?? 0);
   }
 }
 

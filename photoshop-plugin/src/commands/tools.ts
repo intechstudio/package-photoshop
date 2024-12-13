@@ -61,7 +61,7 @@ class Tools {
     if (this._currentTool == toolId) return;
     this._prevTool = this._currentTool;
     this._currentTool = toolId;
-    await this._photoshopService.executeActions([
+    return await this._photoshopService.executeActions([
       {
         _obj: "select",
         _target: [

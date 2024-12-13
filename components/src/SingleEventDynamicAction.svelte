@@ -3,25 +3,28 @@
 />
 
 <script>
-  import { AtomicInput, AtomicSuggestions } from "@intechstudio/grid-uikit";
+  import { MeltCombo } from "@intechstudio/grid-uikit";
   import { onMount } from "svelte";
   let eventType = "";
   let eventId = "";
   let currentCodeValue = "";
   let ref;
-  let suggestionElement;
-  let suggestions = undefined;
+  let suggestions = [];
 
+  $: console.log({ eventType });
   $: eventType && loadSuggestions();
 
   function loadSuggestions() {
     // @ts-ignore
+    console.log("LOAD SUGGESTIONS");
     let port = createPackageMessagePort("package-photoshop", "dynamic-action");
     port.onmessage = (e) => {
+      console.log("RECEIVED DATA");
       const data = e.data;
       if (data.type === "init-suggestions") {
         suggestions = data.suggestions[eventType];
       }
+      console.log({ suggestions });
       port.close();
     };
     port.start();
@@ -29,6 +32,7 @@
 
   function handleConfigUpdate(config) {
     const regex = /^gps\("package-photoshop", "*(.*?)", "*(.*?)"\)$/;
+    console.log({ script: config.script });
     if (currentCodeValue != config.script) {
       currentCodeValue = config.script;
       const match = config.script.match(regex);
@@ -49,6 +53,8 @@
 
   $: eventId,
     (function () {
+      if (!eventType) return;
+
       var code = `gps("package-photoshop", "${eventType}", "${eventId}")`;
       if (currentCodeValue != code) {
         currentCodeValue = code;
@@ -68,18 +74,12 @@
   bind:this={ref}
 >
   <div class="w-full flex">
-    <div class="atomicInput">
-      <div class="text-gray-500 text-sm pb-1">Parameter ID</div>
-      <AtomicInput
-        inputValue={eventId}
-        {suggestions}
-        suggestionTarget={suggestionElement}
-        on:change={(e) => {
-          eventId = e.detail;
-        }}
-      />
-    </div>
+    <MeltCombo
+      title={"Parameter ID"}
+      bind:value={eventId}
+      {suggestions}
+      searchable={true}
+      size={"full"}
+    />
   </div>
-
-  <AtomicSuggestions bind:component={suggestionElement} />
 </single-event>

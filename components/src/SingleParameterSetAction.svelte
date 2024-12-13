@@ -3,47 +3,17 @@
 />
 
 <script>
-  import {
-    AtomicInput,
-    AtomicSuggestions,
-    MeltCheckbox,
-  } from "@intechstudio/grid-uikit";
+  import { MeltCombo, MeltCheckbox } from "@intechstudio/grid-uikit";
   import { onMount } from "svelte";
+  import data from "./single_parameter_set_data.js";
   let parameterType = "";
   let parameterId = "";
   let parameterValue = "";
   let isRelativeMode = false;
   let currentCodeValue = "";
   let ref;
-  let suggestionElement;
-  $: suggestions = {
-    "tool-parameter": [
-      { info: "Angle", value: "angle" },
-      { info: "Flow", value: "flow" },
-      { info: "Hardness", value: "hardness" },
-      //{info: "Mode", value : "mode"},
-      { info: "Opacity", value: "opacity" },
-      { info: "Pressure", value: "pressure" },
-      { info: "Roundness", value: "roundness" },
-      { info: "Size", value: "size" },
-      { info: "Smoothing", value: "smoothing" },
-      { info: "Spacing", value: "spacing" },
-    ],
-    "image-adjustment": [
-      { info: "Brightness", value: "brigthness" },
-      { info: "Contrast", value: "contrast" },
-      { info: "Hue", value: "hue" },
-      { info: "Lightness", value: "lightness" },
-      { info: "Saturation", value: "saturation" },
-    ],
-    "adjust-adjustment": [
-      { info: "Brightness", value: "brightness" },
-      { info: "Contrast", value: "contrast" },
-      { info: "Exposure", value: "exposure" },
-      { info: "Offset", value: "offset" },
-      { info: "Gamma", value: "gamma" },
-    ],
-  }[parameterType];
+  let isInitialized = false;
+  $: suggestions = data[parameterType];
 
   function handleConfigUpdate(config) {
     const regex =
@@ -56,6 +26,7 @@
         parameterId = match[2] ?? "";
         parameterValue = match[3] ?? "";
         isRelativeMode = match[4] == "1";
+        isInitialized = true;
       }
     }
   }
@@ -71,21 +42,22 @@
   $: parameterId,
     parameterValue,
     isRelativeMode,
-    (function () {
-      var code = `gps("package-photoshop", "${parameterType}", "${parameterId}", ${parameterValue}, ${
-        isRelativeMode ? 1 : 0
-      })`;
-      if (currentCodeValue != code) {
-        currentCodeValue = code;
-        const event = new CustomEvent("updateCode", {
-          bubbles: true,
-          detail: { script: String(code) },
-        });
-        if (ref) {
-          ref.dispatchEvent(event);
+    isInitialized &&
+      (function () {
+        var code = `gps("package-photoshop", "${parameterType}", "${parameterId}", ${parameterValue}, ${
+          isRelativeMode ? 1 : 0
+        })`;
+        if (currentCodeValue != code) {
+          currentCodeValue = code;
+          const event = new CustomEvent("updateCode", {
+            bubbles: true,
+            detail: { script: String(code) },
+          });
+          if (ref) {
+            ref.dispatchEvent(event);
+          }
         }
-      }
-    })();
+      })();
 </script>
 
 <single-parameter-set
@@ -93,32 +65,25 @@
   bind:this={ref}
 >
   <div class="w-full flex">
-    <div class="atomicInput" style="width: 50%;">
-      <div class="text-gray-500 text-sm pb-1">Parameter ID</div>
-      <AtomicInput
-        inputValue={parameterId}
+    <div style="width: 50%;">
+      <MeltCombo
+        title={"Parameter ID"}
+        bind:value={parameterId}
         {suggestions}
-        suggestionTarget={suggestionElement}
-        on:change={(e) => {
-          parameterId = e.detail;
-        }}
+        searchable={true}
+        size={"full"}
       />
     </div>
-    <div class="atomicInput" style="width: 50%;">
-      <div class="text-gray-500 text-sm pb-1">Parameter value</div>
-      <AtomicInput
-        inputValue={parameterValue}
-        suggestions={[]}
-        suggestionTarget={suggestionElement}
-        on:change={(e) => {
-          parameterValue = e.detail;
-        }}
+    <div style="width: 50%;">
+      <MeltCombo
+        title={"Parameter value"}
+        bind:value={parameterValue}
+        size={"full"}
       />
     </div>
   </div>
 
-  <AtomicSuggestions bind:component={suggestionElement} />
-  {#if parameterType != "image-adjustment"}
+  {#if parameterType != "image-adjustment" && parameterType != "custom-keys"}
     <MeltCheckbox bind:target={isRelativeMode} title={"Relative Mode"} />
   {/if}
 </single-parameter-set>

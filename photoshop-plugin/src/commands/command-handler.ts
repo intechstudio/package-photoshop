@@ -21,7 +21,10 @@ interface PhotoshopCommand {
 
 class PhotoshopCommandHandler {
   private _photoshopService!: PhotoshopServiceInterface;
-  private _editorService!: EditorServiceInterface;
+  _editorService!: EditorServiceInterface;
+
+  public menuInfo: Map<string, string> = new Map();
+  public toolInfo: Map<string, string> = new Map();
 
   public initializeCommunication(
     photoshopService: PhotoshopServiceInterface,
@@ -57,98 +60,158 @@ class PhotoshopCommandHandler {
     return this._instance;
   }
 
-  async handleCommand(params: any) {
+  handleCommand(params: any[], commandMode: string) {
+    let executeCommand = (
+      commandOverlay: string,
+      command: () => Promise<any>
+    ): Promise<any> => {
+      if (commandMode.includes("overlay")) {
+        this._editorService.sendMessageToEditor(
+          JSON.stringify({
+            type: "show-overlay-info",
+            info: commandOverlay,
+          })
+        );
+      }
+      if (commandMode.includes("execute")) {
+        return command();
+      }
+
+      return Promise.resolve();
+    };
+
     switch (params[0]) {
       case "menu":
-        await this._photoshopService.performMenuCommand(Number(params[1]));
-        break;
+        return executeCommand(
+          `Menu command ${this.menuInfo.get(params[1]) ?? params[1]}`,
+          () => this._photoshopService.performMenuCommand(Number(params[1]))
+        );
       case "json":
-        await this._photoshopService.executeActions(JSON.parse(params[1]));
+        return executeCommand("Custom JSON action", () =>
+          this._photoshopService.executeActions(JSON.parse(params[1]))
+        );
       case "tool-parameter":
-        await tools.setToolParameters(params[1], params[2], params[3]);
-        break;
+        return executeCommand(
+          params[3]
+            ? `Change ${params[1]} by ${params[2]}`
+            : `Set ${params[1]} to ${params[2]}`,
+          () => tools.setToolParameters(params[1], params[2], params[3])
+        );
       case "select-tool":
-        await tools.setTool(params[1]);
-        break;
+        return executeCommand(
+          `${this.toolInfo.get(params[1]) ?? params[1]} selected`,
+          () => tools.setTool(params[1])
+        );
       case "image-adjustment":
-        switch (params[1]) {
-          case "brightness":
-            await imageAdjustment.changeBrightnessContrast(params[2], 0);
-            break;
-          case "contrast":
-            await imageAdjustment.changeBrightnessContrast(0, params[2]);
-            break;
-          case "hue":
-            await imageAdjustment.changeHSL(params[2], 0, 0);
-            break;
-          case "saturation":
-            await imageAdjustment.changeHSL(0, params[2], 0);
-            break;
-          case "lightness":
-            await imageAdjustment.changeHSL(0, 0, params[2]);
-            break;
-        }
-        break;
+        return executeCommand(
+          `Adjust image ${params[1]} by ${params[2]}`,
+          () => {
+            switch (params[1]) {
+              case "brightness":
+                return imageAdjustment.changeBrightnessContrast(params[2], 0);
+              case "contrast":
+                return imageAdjustment.changeBrightnessContrast(0, params[2]);
+              case "hue":
+                return imageAdjustment.changeHSL(params[2], 0, 0);
+              case "saturation":
+                return imageAdjustment.changeHSL(0, params[2], 0);
+              case "lightness":
+                return imageAdjustment.changeHSL(0, 0, params[2]);
+            }
+            return Promise.reject();
+          }
+        );
       case "create-adjustment":
-        await adjustmentLayer.createLayer(params[1]);
-        break;
+        return executeCommand(`Create ${params[1]} adjustment layer`, () =>
+          adjustmentLayer.createLayer(params[1])
+        );
       case "adjust-adjustment":
-        switch (params[1]) {
-          case "brightness":
-            await adjustmentLayer.modifyBrigthnessContrast({
-              brightness: params[2],
-              isRelative: params[3],
-            });
-            break;
-          case "contrast":
-            await adjustmentLayer.modifyBrigthnessContrast({
-              contrast: params[2],
-              isRelative: params[3],
-            });
-            break;
-          case "exposure":
-            await adjustmentLayer.modifyExposureOffsetGamma({
-              exposure: params[2],
-              isRelative: params[3],
-            });
-            break;
-          case "offset":
-            await adjustmentLayer.modifyExposureOffsetGamma({
-              offset: params[2],
-              isRelative: params[3],
-            });
-            break;
-          case "gamma":
-            await adjustmentLayer.modifyExposureOffsetGamma({
-              gamma: params[2],
-              isRelative: params[3],
-            });
-            break;
-        }
+        return executeCommand(
+          params[3]
+            ? `Adjust layer ${params[1]} by ${params[2]}`
+            : `Set layer ${params[1]} to ${params[2]}`,
+          () => {
+            switch (params[1]) {
+              case "brightness":
+                return adjustmentLayer.modifyBrigthnessContrast({
+                  brightness: params[2],
+                  isRelative: params[3],
+                });
+              case "contrast":
+                return adjustmentLayer.modifyBrigthnessContrast({
+                  contrast: params[2],
+                  isRelative: params[3],
+                });
+              case "exposure":
+                return adjustmentLayer.modifyExposureOffsetGamma({
+                  exposure: params[2],
+                  isRelative: params[3],
+                });
+              case "offset":
+                return adjustmentLayer.modifyExposureOffsetGamma({
+                  offset: params[2],
+                  isRelative: params[3],
+                });
+              case "gamma":
+                return adjustmentLayer.modifyExposureOffsetGamma({
+                  gamma: params[2],
+                  isRelative: params[3],
+                });
+              case "vibrance":
+                return adjustmentLayer.modifyVibranceSaturation({
+                  vibrance: params[2],
+                  isRelative: params[3],
+                });
+              case "vibranceSaturation":
+                return adjustmentLayer.modifyVibranceSaturation({
+                  saturation: params[2],
+                  isRelative: params[3],
+                });
+              case "hue":
+                return adjustmentLayer.modifyHueSaturationLightness({
+                  hue: params[2],
+                  isRelative: params[3],
+                });
+              case "saturation":
+                return adjustmentLayer.modifyHueSaturationLightness({
+                  saturation: params[2],
+                  isRelative: params[3],
+                });
+              case "lightness":
+                return adjustmentLayer.modifyHueSaturationLightness({
+                  lightness: params[2],
+                  isRelative: params[3],
+                });
+            }
+            return Promise.reject();
+          }
+        );
       case "quick-action":
         switch (params[1]) {
           case "toggle-tool":
-            await tools.setPreviousTool();
-            break;
+            return executeCommand(`Toogle current/previous tool`, () =>
+              tools.setPreviousTool()
+            );
           case "content-fill":
-            await this._photoshopService.executeActions([contentAwareFill]);
-            break;
+            return executeCommand(`Content-aware auto fill`, () =>
+              this._photoshopService.executeActions([contentAwareFill])
+            );
           case "switch-colors":
-            await this._photoshopService.executeActions([
-              switchColors,
-              refreshToolUi,
-            ]);
-            break;
+            return executeCommand(`Switch primary/secondary color`, () =>
+              this._photoshopService.executeActions([
+                switchColors,
+                refreshToolUi,
+              ])
+            );
           case "merge-visible-duplicate":
-            await this._photoshopService.executeActions([
-              mergeVisibleDuplicate,
-            ]);
-            break;
+            return executeCommand(`Merge visible layers`, () =>
+              this._photoshopService.executeActions([mergeVisibleDuplicate])
+            );
           case "create-layer-mask":
-            await this._photoshopService.executeActions([createLayerMask]);
-            break;
+            return executeCommand(`Create layer mask`, () =>
+              this._photoshopService.executeActions([createLayerMask])
+            );
         }
-        break;
         break;
     }
   }

@@ -18,6 +18,8 @@ let enableOverlay = false;
 let useControlKeyForOverlay = false;
 let currentControlKeyValue = false;
 
+let actionId = 0;
+
 let overlayMessagePort = undefined;
 
 exports.loadPackage = async function (gridController, persistedData) {
@@ -33,7 +35,6 @@ exports.loadPackage = async function (gridController, persistedData) {
   enableOverlay = persistedData?.enableOverlay ?? false;
   useControlKeyForOverlay = persistedData?.useControlKeyForOverlay ?? false;
 
-  let actionId = 0;
   function createPhotoshopAction(overrides) {
     gridController.sendMessageToEditor({
       type: "add-action",
@@ -101,7 +102,7 @@ exports.loadPackage = async function (gridController, persistedData) {
   });
   createPhotoshopAction({
     short: "xpsck",
-    displayName: "Overlay Control",
+    displayName: "Custom keys",
     defaultLua:
       'gps("package-photoshop", "custom-keys", "overlay-control", val, 0)',
     actionComponent: "single-parameter-set-action",
@@ -132,6 +133,12 @@ exports.loadPackage = async function (gridController, persistedData) {
 };
 
 exports.unloadPackage = async function () {
+  while (--actionId >= 0) {
+    controller.sendMessageToEditor({
+      type: "remove-action",
+      actionId,
+    });
+  }
   closeWindow();
   photoshopWs?.close();
   wss?.close();

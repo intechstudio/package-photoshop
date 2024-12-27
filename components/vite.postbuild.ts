@@ -7,12 +7,6 @@ export function notifyEditorAfterBuildPlugin(): PluginOption {
     name: "postbuild-notify-editor",
     closeBundle: () =>
       new Promise<void>((resolve) => {
-        if (
-          process.env.WEB_COMPONENT_NAME &&
-          process.env.WEB_COMPONENT_NAME != "profile-cloud-dev"
-        ) {
-          resolve();
-        }
         let timeout = setTimeout(() => {
           console.log("No connection to Editor, closing websocket connection");
           ws.close();

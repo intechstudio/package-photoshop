@@ -124,7 +124,7 @@ exports.loadPackage = async function (gridController, persistedData) {
   });
 
   if (watchForActiveWindow && ActiveWindow.requestPermissions()) {
-    activeWindowSubscribeId = ActiveWindow.subscribe(console.log);
+    activeWindowSubscribeId = ActiveWindow.subscribe(handleActiveWindowChange);
   }
 
   if (enableOverlay) {

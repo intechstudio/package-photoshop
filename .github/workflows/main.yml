@@ -70,7 +70,7 @@ jobs:
         run: npm install
 
       - name: Build package
-          npm run build
+        run: npm run build
 
       - name: Install archiver package
         run: npm install archiver

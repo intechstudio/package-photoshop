@@ -69,17 +69,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build components
-        run: |
-          cd components
-          npm install
+      - name: Build package
           npm run build
-
-      - name: Build photoshop plugin
-        run: |
-          cd photoshop-plugin
-          npm install
-          npm run ccx
 
       - name: Install archiver package
         run: npm install archiver

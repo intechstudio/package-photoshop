@@ -5,7 +5,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "install:components": "cd ./components && npm install",
+    "install:photoshop": "cd ./photoshop-plugin && npm install",
+    "build:components": "cd ./components && npm run build",
+    "build:photoshop": "cd ./photoshop-plugin && npm run ccx",
+    "dev:components": "cd ./components && npm run dev",
+    "dev:photoshop": "cd ./photoshop-plugin && npm run dev",
+    "postinstall": "run-p install:*",
+    "build": "run-p build:*",
+    "dev": "run-p dev:*"
   },
   "author": "",
   "license": "ISC",
@@ -20,6 +29,7 @@
   },
   "devDependencies": {
     "prettier": "2.8.8",
-    "prettier-plugin-svelte": "^2.10.1"
+    "prettier-plugin-svelte": "^2.10.1",
+    "npm-run-all": "^4.1.5"
   }
 }

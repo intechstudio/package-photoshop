@@ -56,7 +56,7 @@
 </script>
 
 <main-app>
-  <div class="px-4">
+  <div class="px-4 bg-secondary rounded-lg">
     <Block>
       <BlockTitle>
         <div class="flex flex-row content-center">

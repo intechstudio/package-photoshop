@@ -13,12 +13,13 @@ export function notifyEditorAfterBuildPlugin(): PluginOption {
           resolve();
         }, 3000);
         let ws = new WebSocket("ws://localhost:9000");
+        let packageId = require("../package.json").name;
         ws.on("open", () => {
           ws.send(
             JSON.stringify({
               type: "developer-package",
               event: "components-build-complete",
-              id: "package-photoshop",
+              id: packageId,
               rootPath: path.resolve(__dirname, ".."),
             })
           );

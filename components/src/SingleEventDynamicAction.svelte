@@ -16,13 +16,11 @@
 
   function loadSuggestions() {
     // @ts-ignore
-    console.log("LOAD SUGGESTIONS");
     let port = createPackageMessagePort("package-photoshop", "dynamic-action");
     port.onmessage = (e) => {
-      console.log("RECEIVED DATA");
       const data = e.data;
       if (data.type === "init-suggestions") {
-        suggestions = data.suggestions[eventType];
+        suggestions = (data.suggestions ?? {})[eventType] ?? [];
       }
       console.log({ suggestions });
       port.close();

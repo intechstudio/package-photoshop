@@ -12,7 +12,7 @@ class ImageAdjustments {
   }
 
   public async initImageAdjustments(
-    photoshopService: PhotoshopServiceInterface
+    photoshopService: PhotoshopServiceInterface,
   ) {
     this._photoshopService = photoshopService;
   }

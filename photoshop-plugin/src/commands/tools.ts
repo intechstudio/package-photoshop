@@ -43,7 +43,7 @@ class Tools {
 
     this._photoshopService.addActionNotificationListener(
       ["select"],
-      (name: string, descriptor: any) => this._onToolSelected(name, descriptor)
+      (name: string, descriptor: any) => this._onToolSelected(name, descriptor),
     );
   }
 
@@ -80,7 +80,7 @@ class Tools {
   public async setToolParameters(
     toolId: string,
     toolValue: number,
-    isRelative: boolean
+    isRelative: boolean,
   ) {
     const currentToolProperties = await this._getCurrentToolProperties();
     let originalValue = 0;
@@ -140,7 +140,7 @@ class Tools {
         let newHardness = this._getClampedValue(
           originalValue + toolValue,
           0,
-          100
+          100,
         );
         brush.hardness._value = newHardness;
         await this._setBrushOptions(brush);
@@ -152,31 +152,31 @@ class Tools {
         let newOpacity = this._getClampedValue(
           originalValue + toolValue,
           0,
-          100
+          100,
         );
         currentToolProperties.currentToolOptions.opacity = newOpacity;
         await this._setToolOptions(
           { opacity: newOpacity },
-          currentToolProperties
+          currentToolProperties,
         );
         break;
       case "pressure":
         let newPressure = this._getClampedValue(
           originalValue + toolValue,
           0,
-          100
+          100,
         );
         currentToolProperties.currentToolOptions.pressure = newPressure;
         await this._setToolOptions(
           { pressure: newPressure },
-          currentToolProperties
+          currentToolProperties,
         );
         break;
       case "roundness":
         let newRoundness = this._getClampedValue(
           originalValue + toolValue,
           1,
-          100
+          100,
         );
         brush.roundness._value = newRoundness;
         await this._setBrushOptions(brush);
@@ -192,7 +192,7 @@ class Tools {
         let newSmooth = this._getClampedValue(
           originalValue + toolValue,
           0,
-          100
+          100,
         );
         currentToolProperties.currentToolOptions.smooth = newSmooth;
         await this._setToolOptions(
@@ -200,14 +200,14 @@ class Tools {
             smooth: newSmooth,
             smoothingValue: Math.round((newSmooth / 100) * 255),
           },
-          currentToolProperties
+          currentToolProperties,
         );
         break;
       case "spacing":
         let newSpacing = this._getClampedValue(
           originalValue + toolValue,
           1,
-          1000
+          1000,
         );
         brush.spacing._value = newSpacing;
         await this._setBrushOptions(brush);
@@ -283,14 +283,14 @@ class Tools {
   private mustSendNewToolOptions = false;
   private async _setToolOptions(
     to: any,
-    currentToolProperties: ActionDescriptor
+    currentToolProperties: ActionDescriptor,
   ) {
     to["_obj"] = "null";
     to = Object.assign(
       this._getToolOptionsToDescriptor(
-        currentToolProperties.currentToolOptions
+        currentToolProperties.currentToolOptions,
       ),
-      to
+      to,
     );
     this.latestToolOptions = to;
     this.mustSendNewToolOptions = true;

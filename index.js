@@ -26,7 +26,7 @@ exports.loadPackage = async function (gridController, persistedData) {
   controller = gridController;
   let photoshopIconSvg = fs.readFileSync(
     path.resolve(__dirname, "photoshop_icon.svg"),
-    { encoding: "utf-8" }
+    { encoding: "utf-8" },
   );
 
   console.log({ persistedData });
@@ -176,7 +176,7 @@ exports.addMessagePort = async function (port, senderId) {
               activeWindowSubscribeId = undefined;
             }
             activeWindowSubscribeId = ActiveWindow.subscribe(
-              handleActiveWindowChange
+              handleActiveWindowChange,
             );
           } else {
             watchForActiveWindow = false;
@@ -256,7 +256,7 @@ exports.sendMessage = async function (args) {
       event: "command",
       data: args,
       commandMode,
-    })
+    }),
   );
 };
 

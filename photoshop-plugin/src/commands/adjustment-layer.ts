@@ -12,7 +12,7 @@ class AdjustmentLayer {
   }
 
   public async initeAdjustmentLayer(
-    photoshopService: PhotoshopServiceInterface
+    photoshopService: PhotoshopServiceInterface,
   ) {
     this.photoshopService = photoshopService;
   }
@@ -42,12 +42,12 @@ class AdjustmentLayer {
     let newBrightness = this._getNewValue(
       currentAdjustment.brightness,
       data.brightness,
-      data.isRelative
+      data.isRelative,
     );
     let newContrast = this._getNewValue(
       currentAdjustment.center,
       data.contrast,
-      data.isRelative
+      data.isRelative,
     );
 
     return await this.modifyAdjustmentLayer({
@@ -69,17 +69,17 @@ class AdjustmentLayer {
     let newExposure = this._getNewValue(
       currentAdjustment.exposure,
       data.exposure,
-      data.isRelative
+      data.isRelative,
     );
     let newOffset = this._getNewValue(
       currentAdjustment.offset,
       data.offset,
-      data.isRelative
+      data.isRelative,
     );
     let newGamma = this._getNewValue(
       currentAdjustment.gammaCorrection,
       data.gamma,
-      data.isRelative
+      data.isRelative,
     );
 
     return await this.modifyAdjustmentLayer({
@@ -102,12 +102,12 @@ class AdjustmentLayer {
     let newVibrance = this._getNewValue(
       currentAdjustment.vibrance,
       data.vibrance,
-      data.isRelative
+      data.isRelative,
     );
     let newSaturation = this._getNewValue(
       currentAdjustment.saturation,
       data.saturation,
-      data.isRelative
+      data.isRelative,
     );
     return await this.modifyAdjustmentLayer({
       _obj: "vibrance",
@@ -128,17 +128,17 @@ class AdjustmentLayer {
     let newHue = this._getNewValue(
       currentAdjustment.adjustment[0].hue,
       data.hue,
-      data.isRelative
+      data.isRelative,
     );
     let newSaturation = this._getNewValue(
       currentAdjustment.adjustment[0].saturation,
       data.saturation,
-      data.isRelative
+      data.isRelative,
     );
     let newLightness = this._getNewValue(
       currentAdjustment.adjustment[0].lightness,
       data.lightness,
-      data.isRelative
+      data.isRelative,
     );
     console.log({ currentAdjustment, data });
 
@@ -194,7 +194,7 @@ class AdjustmentLayer {
   private _getNewValue(
     originalValue: number | undefined,
     newValue: number | undefined,
-    isRelative: boolean
+    isRelative: boolean,
   ) {
     if (!isRelative) {
       return newValue ?? 0;

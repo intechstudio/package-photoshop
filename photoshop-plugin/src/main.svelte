@@ -26,7 +26,7 @@
                   0,
                   e.toolTip.indexOf("(") == -1
                     ? e.toolTip.length
-                    : e.toolTip.indexOf("(")
+                    : e.toolTip.indexOf("("),
                 )
                 .trim(),
               value: e.toolID,
@@ -125,7 +125,7 @@
           webSocketClient.send(message);
         }
       },
-    }
+    },
   );
 
   function connectToWebSocket() {
@@ -158,7 +158,7 @@
             "select-tool": uiInfo,
             menu: commandCollection,
           },
-        })
+        }),
       );
     });
 
@@ -194,7 +194,7 @@
             }
             await photoshopCommandHandler.handleCommand(
               commandParams,
-              commandMode
+              commandMode,
             );
           }
           break;

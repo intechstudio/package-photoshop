@@ -13,7 +13,7 @@ export const openUXPPanel = async (id: string) => {
   const plugins = Array.from(uxp.pluginManager.plugins);
 
   const plugin = plugins.find(
-    (plugin) => plugin.id === uxp.entrypoints._pluginInfo.id
+    (plugin) => plugin.id === uxp.entrypoints._pluginInfo.id,
   );
   console.log("plugin", plugin, "opening panel: ", id);
   if (plugin) await plugin.showPanel(id);
@@ -22,13 +22,13 @@ export const openUXPPanel = async (id: string) => {
 
 export async function batchPlayInModal(
   actionJSON: ActionDescriptor[],
-  batchPlayOptions: BatchPlayCommandOptions = {}
+  batchPlayOptions: BatchPlayCommandOptions = {},
 ) {
   return await executeAsModal(
     () => {
       return batchPlay(actionJSON, batchPlayOptions);
     },
-    { commandName: "batchPlayInModal" }
+    { commandName: "batchPlayInModal" },
   )
     .then((res) => {
       console.log({ res });

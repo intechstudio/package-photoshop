@@ -17,7 +17,7 @@
   // @ts-ignore
   const messagePort = createPackageMessagePort(
     "package-photoshop",
-    "preferences"
+    "preferences",
   );
 
   let watchForActiveWindow = false;

@@ -28,7 +28,7 @@ class PhotoshopCommandHandler {
 
   public initializeCommunication(
     photoshopService: PhotoshopServiceInterface,
-    editorService: EditorServiceInterface
+    editorService: EditorServiceInterface,
   ) {
     this._photoshopService = photoshopService;
     this._editorService = editorService;
@@ -63,14 +63,14 @@ class PhotoshopCommandHandler {
   handleCommand(params: any[], commandMode: string) {
     let executeCommand = (
       commandOverlay: string,
-      command: () => Promise<any>
+      command: () => Promise<any>,
     ): Promise<any> => {
       if (commandMode.includes("overlay")) {
         this._editorService.sendMessageToEditor(
           JSON.stringify({
             type: "show-overlay-info",
             info: commandOverlay,
-          })
+          }),
         );
       }
       if (commandMode.includes("execute")) {
@@ -84,23 +84,23 @@ class PhotoshopCommandHandler {
       case "menu":
         return executeCommand(
           `Menu command ${this.menuInfo.get(params[1]) ?? params[1]}`,
-          () => this._photoshopService.performMenuCommand(Number(params[1]))
+          () => this._photoshopService.performMenuCommand(Number(params[1])),
         );
       case "json":
         return executeCommand("Custom JSON action", () =>
-          this._photoshopService.executeActions(JSON.parse(params[1]))
+          this._photoshopService.executeActions(JSON.parse(params[1])),
         );
       case "tool-parameter":
         return executeCommand(
           params[3]
             ? `Change ${params[1]} by ${params[2]}`
             : `Set ${params[1]} to ${params[2]}`,
-          () => tools.setToolParameters(params[1], params[2], params[3])
+          () => tools.setToolParameters(params[1], params[2], params[3]),
         );
       case "select-tool":
         return executeCommand(
           `${this.toolInfo.get(params[1]) ?? params[1]} selected`,
-          () => tools.setTool(params[1])
+          () => tools.setTool(params[1]),
         );
       case "image-adjustment":
         return executeCommand(
@@ -119,11 +119,11 @@ class PhotoshopCommandHandler {
                 return imageAdjustment.changeHSL(0, 0, params[2]);
             }
             return Promise.reject();
-          }
+          },
         );
       case "create-adjustment":
         return executeCommand(`Create ${params[1]} adjustment layer`, () =>
-          adjustmentLayer.createLayer(params[1])
+          adjustmentLayer.createLayer(params[1]),
         );
       case "adjust-adjustment":
         return executeCommand(
@@ -184,32 +184,32 @@ class PhotoshopCommandHandler {
                 });
             }
             return Promise.reject();
-          }
+          },
         );
       case "quick-action":
         switch (params[1]) {
           case "toggle-tool":
             return executeCommand(`Toogle current/previous tool`, () =>
-              tools.setPreviousTool()
+              tools.setPreviousTool(),
             );
           case "content-fill":
             return executeCommand(`Content-aware auto fill`, () =>
-              this._photoshopService.executeActions([contentAwareFill])
+              this._photoshopService.executeActions([contentAwareFill]),
             );
           case "switch-colors":
             return executeCommand(`Switch primary/secondary color`, () =>
               this._photoshopService.executeActions([
                 switchColors,
                 refreshToolUi,
-              ])
+              ]),
             );
           case "merge-visible-duplicate":
             return executeCommand(`Merge visible layers`, () =>
-              this._photoshopService.executeActions([mergeVisibleDuplicate])
+              this._photoshopService.executeActions([mergeVisibleDuplicate]),
             );
           case "create-layer-mask":
             return executeCommand(`Create layer mask`, () =>
-              this._photoshopService.executeActions([createLayerMask])
+              this._photoshopService.executeActions([createLayerMask]),
             );
         }
         break;

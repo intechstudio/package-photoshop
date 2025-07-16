@@ -1,6 +1,6 @@
 {
   "name": "package-photoshop",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Photoshop package",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,10 @@
   "license": "ISC",
   "grid_editor": {
     "componentsPath": "components/dist/components.js",
-    "preferenceComponent": "photoshop-preference"
+    "preferenceComponent": "photoshop-preference",
+    "shortDescription": "Control Photoshop through the Editor.",
+    "mainIcon": "photoshop-logo.svg",
+    "menuIcon": "photoshop-menu-icon.svg"
   },
   "dependencies": {
     "@paymoapp/active-window": "^2.1.1",

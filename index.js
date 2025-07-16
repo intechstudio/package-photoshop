@@ -25,7 +25,7 @@ let overlayMessagePort = undefined;
 exports.loadPackage = async function (gridController, persistedData) {
   controller = gridController;
   let photoshopIconSvg = fs.readFileSync(
-    path.resolve(__dirname, "photoshop_icon.svg"),
+    path.resolve(__dirname, "photoshop-action-icon.svg"),
     { encoding: "utf-8" },
   );
 

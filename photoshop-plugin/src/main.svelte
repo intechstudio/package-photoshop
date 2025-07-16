@@ -209,9 +209,17 @@
 </script>
 
 <main>
-  Connection status: {wsClientStatus}
+  <div class="centered">Connection status: {wsClientStatus}</div>
 </main>
 
 <style lang="scss">
   @import "./variables.scss";
+
+  .centered {
+    position: fixed; /* or absolute */
+    top: 40%;
+    left: 50%;
+    /* bring your own prefixes */
+    transform: translate(-50%, -50%);
+  }
 </style>

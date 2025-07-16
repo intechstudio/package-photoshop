@@ -7,7 +7,7 @@
     Block,
     BlockBody,
     BlockTitle,
-    MoltenButton,
+    MoltenPushButton,
     MeltCheckbox,
   } from "@intechstudio/grid-uikit";
   import { onMount } from "svelte";
@@ -72,17 +72,20 @@
           ? "Connected"
           : "Connecting"}
       </BlockBody>
-      <BlockBody>
-        Photoshop plugin must be installed!
-        <MoltenButton
-          title={"CCX file location"}
-          click={() => {
-            messagePort.postMessage({
-              type: "open-plugin-folder",
-            });
-          }}
-        />
-      </BlockBody>
+      {#if !currentlyConnected}
+        <BlockBody>
+          <p>Photoshop plugin must be installed!</p>
+          <MoltenPushButton
+            style="outlined"
+            text={"CCX file location"}
+            click={() => {
+              messagePort.postMessage({
+                type: "open-plugin-folder",
+              });
+            }}
+          />
+        </BlockBody>
+      {/if}
       <BlockBody>
         Photoshop focus
         <MeltCheckbox

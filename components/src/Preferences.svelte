@@ -92,6 +92,9 @@
           title={"Only run actions when Photoshop is in focus"}
           bind:target={watchForActiveWindow}
         />
+        <p class="text-gray-500 text-sm font-bold mt-1">
+          Note: Requires Active Window package enabled
+        </p>
       </BlockBody>
 
       <BlockBody>

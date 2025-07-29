@@ -1,4 +1,3 @@
-import { ActionDescriptor } from "photoshop/dom/CoreModules";
 import {
   contentAwareFill,
   createLayerMask,
@@ -12,12 +11,6 @@ import tools from "./tools";
 import imageAdjustment from "./image-adjustment";
 import adjustmentLayer from "./adjustment-layer";
 import { EditorServiceInterface } from "../editor-service-interface";
-
-interface PhotoshopCommand {
-  type: string;
-  actions?: ActionDescriptor[];
-  commandID?: number;
-}
 
 class PhotoshopCommandHandler {
   private _photoshopService!: PhotoshopServiceInterface;

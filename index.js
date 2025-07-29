@@ -2,7 +2,6 @@ const fs = require("fs");
 const path = require("path");
 const WebSocket = require("ws");
 const openExplorer = require("open-file-explorer");
-const { ActiveWindow } = require("@paymoapp/active-window");
 
 let wss = undefined;
 let photoshopWs = undefined;
@@ -11,7 +10,6 @@ let preferenceMessagePort = undefined;
 let dynamicSuggestionData = {};
 
 let watchForActiveWindow = false;
-let activeWindowSubscribeId = undefined;
 let isPhotoshopActive = false;
 
 let enableOverlay = false;
@@ -123,12 +121,12 @@ exports.loadPackage = async function (gridController, persistedData) {
     });
   });
 
-  if (watchForActiveWindow && ActiveWindow.requestPermissions()) {
-    activeWindowSubscribeId = ActiveWindow.subscribe(handleActiveWindowChange);
-  }
-
   if (enableOverlay) {
     createWindow();
+  }
+
+  if (watchForActiveWindow) {
+    setTimeout(tryActivateActiveWindow, 50);
   }
 };
 
@@ -144,9 +142,15 @@ exports.unloadPackage = async function () {
   wss?.close();
   preferenceMessagePort?.close();
   overlayMessagePort?.close();
-  if (activeWindowSubscribeId) {
-    ActiveWindow.unsubscribe(activeWindowSubscribeId);
-    activeWindowSubscribeId = undefined;
+  if (watchForActiveWindow) {
+    clearTimeout(activeWindowSubscribeTimeoutId);
+    controller.sendMessageToEditor({
+      type: "send-package-message",
+      targetPackageId: "package-active-window",
+      message: {
+        type: "unsubscribe",
+      },
+    });
   }
 };
 
@@ -163,31 +167,27 @@ exports.addMessagePort = async function (port, senderId) {
         openExplorer(__dirname);
       } else if (e.data.type === "set-setting") {
         console.log({ data: e.data });
+        if (watchForActiveWindow !== e.data.watchForActiveWindow) {
+          watchForActiveWindow = e.data.watchForActiveWindow;
+          if (watchForActiveWindow) {
+            tryActivateActiveWindow();
+          } else {
+            clearTimeout(activeWindowSubscribeTimeoutId);
+            controller.sendMessageToEditor({
+              type: "send-package-message",
+              targetPackageId: "package-active-window",
+              message: {
+                type: "unsubscribe",
+              },
+            });
+          }
+        }
         watchForActiveWindow = e.data.watchForActiveWindow;
         if (enableOverlay != e.data.enableOverlay) {
           enableOverlay = e.data.enableOverlay;
           enableOverlay ? createWindow() : closeWindow();
         }
         useControlKeyForOverlay = e.data.useControlKeyForOverlay;
-        if (watchForActiveWindow) {
-          if (ActiveWindow.requestPermissions()) {
-            if (activeWindowSubscribeId) {
-              ActiveWindow.unsubscribe(activeWindowSubscribeId);
-              activeWindowSubscribeId = undefined;
-            }
-            activeWindowSubscribeId = ActiveWindow.subscribe(
-              handleActiveWindowChange,
-            );
-          } else {
-            watchForActiveWindow = false;
-            notifyStatusChange();
-          }
-        } else {
-          if (activeWindowSubscribeId) {
-            ActiveWindow.unsubscribe(activeWindowSubscribeId);
-            activeWindowSubscribeId = undefined;
-          }
-        }
         controller.sendMessageToEditor({
           type: "persist-data",
           data: {
@@ -216,56 +216,93 @@ exports.addMessagePort = async function (port, senderId) {
 };
 
 exports.sendMessage = async function (args) {
-  if (args[0] == "custom-keys") {
-    if (args[1] == "overlay-control") {
-      currentControlKeyValue = Boolean(args[2]);
+  if (Array.isArray(args)) {
+    if (args[0] == "custom-keys") {
+      if (args[1] == "overlay-control") {
+        currentControlKeyValue = Boolean(args[2]);
+        return;
+      } else if (args[1] == "spacebar-shortcut") {
+        if (!watchForActiveWindow) {
+          controller.sendMessageToEditor({
+            type: "show-message",
+            message:
+              "Photoshop focus must be active for spacebar shortcut to work. Enable it in Photoshop Preference!",
+            messageType: "fail",
+          });
+          return;
+        }
+        if (args[2] && !isPhotoshopActive) return;
+        controller.sendMessageToEditor({
+          type: "execute-lua-script",
+          script: `<?lua --[[@gks]] gks(0, 0, ${args[2] ? 1 : 0}, 44) ?>`,
+          targetDx: 0,
+          targetDy: 0,
+        });
+        return;
+      }
+    }
+
+    if (watchForActiveWindow && !isPhotoshopActive) {
+      console.log("Photoshop is not active, ignoring message!");
       return;
-    } else if (args[1] == "spacebar-shortcut") {
-      handleActiveWindowChange(ActiveWindow.getActiveWindow());
-      if (args[2] && !isPhotoshopActive) return;
+    }
+    if (!photoshopWs) {
       controller.sendMessageToEditor({
-        type: "execute-lua-script",
-        script: `<?lua --[[@gks]] gks(0, 0, ${args[2] ? 1 : 0}, 44) ?>`,
-        targetDx: 0,
-        targetDy: 0,
+        type: "show-message",
+        message: "Photoshop is not connected! Check if PS plugin is running!",
+        messageType: "fail",
       });
       return;
     }
+    let commandMode = "execute";
+    if (enableOverlay && useControlKeyForOverlay && currentControlKeyValue) {
+      commandMode = "overlay";
+    } else if (enableOverlay && !useControlKeyForOverlay) {
+      commandMode = "execute|overlay";
+    }
+    photoshopWs?.send(
+      JSON.stringify({
+        event: "command",
+        data: args,
+        commandMode,
+      }),
+    );
+  } else {
+    if (args.type === "active-window-status") {
+      clearTimeout(activeWindowSubscribeTimeoutId);
+      isPhotoshopActive = args.status;
+      console.log({ isPhotoshopActive });
+    }
   }
-
-  if (watchForActiveWindow && !isPhotoshopActive) {
-    console.log("Photoshop is not active, ignoring message!");
-    return;
-  }
-  if (!photoshopWs) {
-    controller.sendMessageToEditor({
-      type: "show-message",
-      message: "Photoshop is not connected! Check if PS plugin is running!",
-      messageType: "fail",
-    });
-    return;
-  }
-  let commandMode = "execute";
-  if (enableOverlay && useControlKeyForOverlay && currentControlKeyValue) {
-    commandMode = "overlay";
-  } else if (enableOverlay && !useControlKeyForOverlay) {
-    commandMode = "execute|overlay";
-  }
-  photoshopWs?.send(
-    JSON.stringify({
-      event: "command",
-      data: args,
-      commandMode,
-    }),
-  );
 };
 
-function handleActiveWindowChange(info) {
-  isPhotoshopActive =
-    info.title.toLowerCase().includes("photoshop") ||
-    info.application.toLowerCase().includes("photoshop") ||
-    info.path.toLowerCase().includes("photoshop");
-  console.log({ isPhotoshopActive });
+let activeWindowSubscribeTimeoutId = undefined;
+function tryActivateActiveWindow() {
+  activeWindowSubscribeTimeoutId = setTimeout(
+    activeWindowRequestNoResponse,
+    50,
+  );
+  controller.sendMessageToEditor({
+    type: "send-package-message",
+    targetPackageId: "package-active-win",
+    message: {
+      type: "subscribe",
+      filter: "Photoshop",
+      target: "application",
+    },
+  });
+}
+
+function activeWindowRequestNoResponse() {
+  activeWindowSubscribeTimeoutId = undefined;
+  controller.sendMessageToEditor({
+    type: "show-message",
+    message:
+      "Couldn't connect to Active Window package! Make sure it is enabled!",
+    messageType: "fail",
+  });
+  watchForActiveWindow = false;
+  notifyStatusChange();
 }
 
 function handlePhotoshopMessage(message) {

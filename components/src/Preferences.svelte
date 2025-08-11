@@ -103,6 +103,9 @@
           title={"Enable overlay for photoshop commands"}
           bind:target={enableOverlay}
         />
+        <p class="text-gray-500 text-sm font-bold mt-1">
+          Note: Requires Overlay package enabled
+        </p>
         {#if enableOverlay}
           <MeltCheckbox
             title={"Use control key to switch between executing and showing command"}

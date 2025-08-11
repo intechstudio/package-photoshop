@@ -18,8 +18,6 @@ let currentControlKeyValue = false;
 
 let actionId = 0;
 
-let overlayMessagePort = undefined;
-
 exports.loadPackage = async function (gridController, persistedData) {
   controller = gridController;
   let photoshopIconSvg = fs.readFileSync(
@@ -121,10 +119,6 @@ exports.loadPackage = async function (gridController, persistedData) {
     });
   });
 
-  if (enableOverlay) {
-    createWindow();
-  }
-
   if (watchForActiveWindow) {
     setTimeout(tryActivateActiveWindow, 50);
   }
@@ -137,11 +131,9 @@ exports.unloadPackage = async function () {
       actionId,
     });
   }
-  closeWindow();
   photoshopWs?.close();
   wss?.close();
   preferenceMessagePort?.close();
-  overlayMessagePort?.close();
   if (watchForActiveWindow) {
     clearTimeout(activeWindowSubscribeTimeoutId);
     controller.sendMessageToEditor({
@@ -183,10 +175,7 @@ exports.addMessagePort = async function (port, senderId) {
           }
         }
         watchForActiveWindow = e.data.watchForActiveWindow;
-        if (enableOverlay != e.data.enableOverlay) {
-          enableOverlay = e.data.enableOverlay;
-          enableOverlay ? createWindow() : closeWindow();
-        }
+        enableOverlay = e.data.enableOverlay;
         useControlKeyForOverlay = e.data.useControlKeyForOverlay;
         controller.sendMessageToEditor({
           type: "persist-data",
@@ -208,10 +197,6 @@ exports.addMessagePort = async function (port, senderId) {
       suggestions: dynamicSuggestionData,
     });
     port.close();
-  } else if (senderId == "photoshop-overlay") {
-    overlayMessagePort?.close();
-    overlayMessagePort = port;
-    port.start();
   }
 };
 
@@ -320,9 +305,13 @@ function handlePhotoshopMessage(message) {
     });
   } else if (data.type === "show-overlay-info") {
     console.log(data.info);
-    overlayMessagePort.postMessage({
-      type: "info",
-      info: data.info,
+    controller.sendMessageToEditor({
+      type: "send-package-message",
+      targetPackageId: "package-overlay",
+      message: {
+        type: "show-text",
+        text: data.info,
+      },
     });
   } else {
     controller.sendMessageToEditor(data);
@@ -336,26 +325,5 @@ function notifyStatusChange() {
     watchForActiveWindow,
     enableOverlay,
     useControlKeyForOverlay,
-  });
-}
-
-function createWindow() {
-  controller.sendMessageToEditor({
-    type: "create-window",
-    windowId: "photoshop-overlay",
-    windowFile: `file://${path.join(__dirname, "overlay.html")}`,
-    fullscreen: true,
-    transparent: true,
-    alwaysOnTop: true,
-    ignoreMouse: true,
-    x: 0,
-    y: 0,
-  });
-}
-
-function closeWindow() {
-  controller.sendMessageToEditor({
-    type: "close-window",
-    windowId: "photoshop-overlay",
   });
 }

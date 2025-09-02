@@ -138,7 +138,7 @@ exports.unloadPackage = async function () {
     clearTimeout(activeWindowSubscribeTimeoutId);
     controller.sendMessageToEditor({
       type: "send-package-message",
-      targetPackageId: "package-active-window",
+      targetPackageId: "package-active-win",
       message: {
         type: "unsubscribe",
       },
@@ -167,7 +167,7 @@ exports.addMessagePort = async function (port, senderId) {
             clearTimeout(activeWindowSubscribeTimeoutId);
             controller.sendMessageToEditor({
               type: "send-package-message",
-              targetPackageId: "package-active-window",
+              targetPackageId: "package-active-win",
               message: {
                 type: "unsubscribe",
               },
@@ -207,6 +207,19 @@ exports.sendMessage = async function (args) {
         currentControlKeyValue = Boolean(args[2]);
         return;
       } else if (args[1] == "spacebar-shortcut") {
+        if (enableOverlay && (!useControlKeyForOverlay || currentControlKeyValue)) {
+          controller.sendMessageToEditor({
+            type: "send-package-message",
+            targetPackageId: "package-overlay",
+            message: {
+              type: "show-text",
+              text: "Spacebar Move",
+            },
+          });
+          if (useControlKeyForOverlay){
+            return;
+          }
+        }
         if (!watchForActiveWindow) {
           controller.sendMessageToEditor({
             type: "show-message",
@@ -256,7 +269,6 @@ exports.sendMessage = async function (args) {
     if (args.type === "active-window-status") {
       clearTimeout(activeWindowSubscribeTimeoutId);
       isPhotoshopActive = args.status;
-      console.log({ isPhotoshopActive });
     }
   }
 };

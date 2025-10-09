@@ -34,8 +34,8 @@ fs.renameSync("components/dist", `${subfolder}/components/dist`);
 
 //Copy ccx file
 fs.renameSync(
-  "photoshop-plugin/ccx/f6c64709_PS.ccx",
-  `${subfolder}/f6c64709_PS.ccx`,
+  "photoshop-plugin/ccx/4cff8bc5_PS.ccx",
+  `${subfolder}/4cff8bc5_PS.ccx`,
 );
 
 output.on("close", () => {

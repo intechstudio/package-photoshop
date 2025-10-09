@@ -19,3 +19,4 @@ export const premierepro = (
 export const illustrator = (
   hostName === "Illustrator" ? require("illustrator") : {}
 ) as any;
+export const pluginVersion = uxp.entrypoints._pluginInfo.version;

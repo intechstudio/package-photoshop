@@ -8,7 +8,7 @@ const extraPrefs = {
 };
 
 const manifest: UXP_Manifest = {
-  id: "f6c64709",
+  id: "4cff8bc5",
   name: "Grid Controller Plugin",
   version,
   main: "index.html",

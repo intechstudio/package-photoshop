@@ -66,14 +66,15 @@ exports.loadPackage = async function (gridController, persistedData) {
   createPhotoshopAction({
     short: "xpstp",
     displayName: "Tool parameter",
-    defaultLua: 'gps("package-photoshop", "tool-parameter", "angle", val, 0)',
+    defaultLua:
+      'gps("package-photoshop", "tool-parameter", "angle", self:get_auto_value(), 0)',
     actionComponent: "single-parameter-set-action",
   });
   createPhotoshopAction({
     short: "xpsia",
     displayName: "Image adjustments",
     defaultLua:
-      'gps("package-photoshop", "image-adjustment", "brightness", val, 1)',
+      'gps("package-photoshop", "image-adjustment", "brightness", self:get_auto_value(), 1)',
     actionComponent: "single-parameter-set-action",
   });
   createPhotoshopAction({
@@ -87,7 +88,7 @@ exports.loadPackage = async function (gridController, persistedData) {
     short: "xpsaal",
     displayName: "Adjust Adjustment Layer",
     defaultLua:
-      'gps("package-photoshop", "adjust-adjustment", "brightness", val, 1)',
+      'gps("package-photoshop", "adjust-adjustment", "brightness", self:get_auto_value(), 1)',
     actionComponent: "single-parameter-set-action",
   });
   createPhotoshopAction({
@@ -100,7 +101,7 @@ exports.loadPackage = async function (gridController, persistedData) {
     short: "xpsck",
     displayName: "Custom keys",
     defaultLua:
-      'gps("package-photoshop", "custom-keys", "overlay-control", val, 0)',
+      'gps("package-photoshop", "custom-keys", "overlay-control", self:get_auto_value(), 0)',
     actionComponent: "single-parameter-set-action",
   });
 
@@ -207,7 +208,10 @@ exports.sendMessage = async function (args) {
         currentControlKeyValue = Boolean(args[2]);
         return;
       } else if (args[1] == "spacebar-shortcut") {
-        if (enableOverlay && (!useControlKeyForOverlay || currentControlKeyValue)) {
+        if (
+          enableOverlay &&
+          (!useControlKeyForOverlay || currentControlKeyValue)
+        ) {
           controller.sendMessageToEditor({
             type: "send-package-message",
             targetPackageId: "package-overlay",
@@ -216,7 +220,7 @@ exports.sendMessage = async function (args) {
               text: "Spacebar Move",
             },
           });
-          if (useControlKeyForOverlay){
+          if (useControlKeyForOverlay) {
             return;
           }
         }
@@ -304,6 +308,7 @@ function activeWindowRequestNoResponse() {
 
 function handlePhotoshopMessage(message) {
   let data = JSON.parse(message);
+  console.log({ data });
   if (data.type === "set-dynamic-suggestions") {
     dynamicSuggestionData = data.suggestions;
     controller.sendMessageToEditor({

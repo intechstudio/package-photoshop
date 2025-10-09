@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { photoshop } from "./globals";
+  import { photoshop, pluginVersion } from "./globals";
   import { onMount } from "svelte";
   import { batchPlayInModal, getPropety } from "./lib/uxp";
   import {
@@ -140,6 +140,13 @@
     webSocketClient.addEventListener("open", async function () {
       wsClientStatus = "connected";
       console.info("WS is open");
+
+      webSocketClient!.send(
+        JSON.stringify({
+          type: "version",
+          version: pluginVersion,
+        }),
+      );
 
       await buildUiInfo();
       await buildCommandCollection();

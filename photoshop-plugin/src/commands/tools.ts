@@ -121,9 +121,53 @@ class Tools {
           originalValue =
             currentToolProperties?.currentToolOptions?.brush?.spacing?._value;
           break;
+        case "minimumRoundness":
+          originalValue =
+            currentToolProperties?.currentToolOptions?.minimumRoundness?._value;
+        case "sizeJitter":
+          originalValue =
+            currentToolProperties?.currentToolOptions?.$szVr?.jitter?._value;
+        case "scatter":
+          originalValue =
+            currentToolProperties?.currentToolOptions?.scatterDynamics?.jitter
+              ?._value;
+        case "textureBrightness":
+          originalValue =
+            currentToolProperties?.currentToolOptions?.textureBrightness;
+        case "textureDepth":
+          originalValue =
+            currentToolProperties?.currentToolOptions?.textureDepth?._value;
+        case "minimumDepth":
+          originalValue =
+            currentToolProperties?.currentToolOptions?.minimumDepth?._value;
+        case "dualBrushSize":
+          originalValue =
+            currentToolProperties?.currentToolOptions?.dualBrush?.brush
+              ?.diameter?._value;
+        case "dualBrushSpacing":
+          originalValue =
+            currentToolProperties?.currentToolOptions?.dualBrush?.brush?.spacing
+              ?._value;
+        case "dualBrushScatter":
+          originalValue =
+            currentToolProperties?.currentToolOptions?.dualBrush
+              ?.scatterDynamics?.jitter?._value;
+        case "transferOpacityJitter":
+          originalValue =
+            currentToolProperties?.currentToolOptions?.$opVr?.jitter?._value;
+        case "transferOpacityMinimum":
+          originalValue =
+            currentToolProperties?.currentToolOptions?.$opVr?.minimum?._value;
+        case "transferFlowJitter":
+          originalValue =
+            currentToolProperties?.currentToolOptions?.$prVr?.jitter?._value;
+        case "transferFlowMinimum":
+          originalValue =
+            currentToolProperties?.currentToolOptions?.$prVr?.minimum?._value;
       }
     }
     let brush = currentToolProperties.currentToolOptions.brush;
+    console.log({ currentToolProperties });
     if (originalValue === undefined || originalValue === null) return;
     switch (toolId) {
       case "angle":
@@ -212,6 +256,241 @@ class Tools {
         brush.spacing._value = newSpacing;
         await this._setBrushOptions(brush);
         break;
+      case "minimumDiameter":
+        let newMinimumDiameter = this._getClampedValue(
+          originalValue + toolValue,
+          0,
+          100,
+        );
+        currentToolProperties.currentToolOptions.minimumDiameter =
+          newMinimumDiameter;
+        await this._setToolOptions(
+          { minimumDiameter: newMinimumDiameter },
+          currentToolProperties,
+        );
+        break;
+      case "sizeJitter":
+        let sizeJitter = this._getClampedValue(
+          originalValue + toolValue,
+          0,
+          100,
+        );
+        let szVr = currentToolProperties.currentToolOptions.$szVr ?? {
+          _obj: "$brVr",
+          $bVTy: 2,
+          $fStp: 25,
+          minimum: {
+            _unit: "percentUnit",
+            _value: 0,
+          },
+        };
+        szVr.jitter = {
+          _unit: "percentUnit",
+          _value: sizeJitter,
+        };
+        await this._setToolOptions({ $szVr: szVr }, currentToolProperties);
+        break;
+      case "scatter":
+        let scatter = this._getClampedValue(originalValue + toolValue, 0, 1000);
+        let scatterDynamics = currentToolProperties.currentToolOptions
+          .scatterDynamics ?? {
+          _obj: "$brVr",
+          $bVTy: 0,
+          $fStp: 25,
+          minimum: {
+            _unit: "percentUnit",
+            _value: 0,
+          },
+        };
+        scatterDynamics.jitter = {
+          _unit: "percentUnit",
+          _value: scatter,
+        };
+        await this._setToolOptions(
+          { scatterDynamics: scatterDynamics },
+          currentToolProperties,
+        );
+        break;
+      case "textureBrightness":
+        let newTextureBrightness = this._getClampedValue(
+          originalValue + toolValue,
+          -150,
+          150,
+        );
+        currentToolProperties.currentToolOptions.textureBrightness =
+          newTextureBrightness;
+        await this._setToolOptions(
+          { textureBrightness: newTextureBrightness },
+          currentToolProperties,
+        );
+        break;
+      case "textureDepth":
+        let newTextureDepth = this._getClampedValue(
+          originalValue + toolValue,
+          0,
+          100,
+        );
+        currentToolProperties.currentToolOptions.textureDepth = {
+          _unit: "percentUnit",
+          _value: newTextureDepth,
+        };
+        await this._setToolOptions(
+          {
+            textureDepth: currentToolProperties.currentToolOptions.textureDepth,
+          },
+          currentToolProperties,
+        );
+        break;
+      case "minimumDepth":
+        let newMinimumDepth = this._getClampedValue(
+          originalValue + toolValue,
+          0,
+          100,
+        );
+        currentToolProperties.currentToolOptions.minimumDepth = {
+          _unit: "percentUnit",
+          _value: newMinimumDepth,
+        };
+        await this._setToolOptions(
+          {
+            minimumDepth: currentToolProperties.currentToolOptions.minimumDepth,
+          },
+          currentToolProperties,
+        );
+        break;
+      case "dualBrushSize":
+        let newDualBrushSize = this._getClampedValue(
+          originalValue + toolValue,
+          1,
+          5000,
+        );
+        if (
+          currentToolProperties.currentToolOptions.dualBrush?.brush?.diameter
+            ?._value === undefined
+        ) {
+          return;
+        }
+        currentToolProperties.currentToolOptions.dualBrush.brush.diameter._value =
+          newDualBrushSize;
+        await this._setToolOptions(
+          { dualBrush: currentToolProperties.currentToolOptions.dualBrush },
+          currentToolProperties,
+        );
+        break;
+      case "dualBrushSpacing":
+        let newDualBrushSpacing = this._getClampedValue(
+          originalValue + toolValue,
+          1,
+          1000,
+        );
+        if (
+          currentToolProperties.currentToolOptions.dualBrush?.brush?.spacing
+            ?._value === undefined
+        ) {
+          return;
+        }
+        currentToolProperties.currentToolOptions.dualBrush.brush.spacing._value =
+          newDualBrushSpacing;
+        await this._setToolOptions(
+          { dualBrush: currentToolProperties.currentToolOptions.dualBrush },
+          currentToolProperties,
+        );
+        break;
+      case "dualBrushScatter":
+        let newDualBrushScatter = this._getClampedValue(
+          originalValue + toolValue,
+          0,
+          1000,
+        );
+        if (
+          currentToolProperties.currentToolOptions.dualBrush?.scatterDynamics
+            ?.jitter?._value === undefined
+        ) {
+          return;
+        }
+        currentToolProperties.currentToolOptions.dualBrush.scatterDynamics.jitter._value =
+          newDualBrushScatter;
+        await this._setToolOptions(
+          { dualBrush: currentToolProperties.currentToolOptions.dualBrush },
+          currentToolProperties,
+        );
+        break;
+      case "transferOpacityJitter":
+        let newTransferOpacityJitter = this._getClampedValue(
+          originalValue + toolValue,
+          0,
+          100,
+        );
+        if (
+          currentToolProperties?.currentToolOptions?.$opVr?.jitter?._value ===
+          undefined
+        ) {
+          return;
+        }
+        currentToolProperties.currentToolOptions.$opVr.jitter._value =
+          newTransferOpacityJitter;
+        await this._setToolOptions(
+          { $opVr: currentToolProperties.currentToolOptions.$opVr },
+          currentToolProperties,
+        );
+        break;
+      case "transferOpacityMinimum":
+        let newTransferOpacityMinimum = this._getClampedValue(
+          originalValue + toolValue,
+          0,
+          100,
+        );
+        if (
+          currentToolProperties?.currentToolOptions?.$opVr?.minimum?._value ===
+          undefined
+        ) {
+          return;
+        }
+        currentToolProperties.currentToolOptions.$opVr.minimum._value =
+          newTransferOpacityMinimum;
+        await this._setToolOptions(
+          { $opVr: currentToolProperties.currentToolOptions.$opVr },
+          currentToolProperties,
+        );
+        break;
+      case "transferFlowJitter":
+        let newTransferFlowJitter = this._getClampedValue(
+          originalValue + toolValue,
+          0,
+          100,
+        );
+        if (
+          currentToolProperties?.currentToolOptions?.$prVr?.jitter?._value ===
+          undefined
+        ) {
+          return;
+        }
+        currentToolProperties.currentToolOptions.$prVr.jitter._value =
+          newTransferFlowJitter;
+        await this._setToolOptions(
+          { $prVr: currentToolProperties.currentToolOptions.$prVr },
+          currentToolProperties,
+        );
+        break;
+      case "transferFlowMinimum":
+        let newTransferFlowMinimum = this._getClampedValue(
+          originalValue + toolValue,
+          0,
+          100,
+        );
+        if (
+          currentToolProperties?.currentToolOptions?.$prVr?.minimum?._value ===
+          undefined
+        ) {
+          return;
+        }
+        currentToolProperties.currentToolOptions.$prVr.minimum._value =
+          newTransferFlowMinimum;
+        await this._setToolOptions(
+          { $prVr: currentToolProperties.currentToolOptions.$prVr },
+          currentToolProperties,
+        );
+        break;
     }
   }
 
@@ -230,7 +509,7 @@ class Tools {
   private async _getCurrentToolProperties() {
     if (
       this.lastToolPropertyCacheDate &&
-      new Date().getTime() - this.lastToolPropertyCacheDate.getTime() > 500
+      new Date().getTime() - this.lastToolPropertyCacheDate.getTime() < 500
     ) {
       this.lastToolPropertyCacheDate = new Date();
       return this.lastToolPropertyCache;

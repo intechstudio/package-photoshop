@@ -9,15 +9,17 @@
   let parameterType = "";
   let parameterId = "";
   let parameterValue = "";
-  let isRelativeMode = false;
+  let isRelativeMode = "";
   let currentCodeValue = "";
   let ref;
   let isInitialized = false;
   $: suggestions = data[parameterType];
 
-  function handleConfigUpdate(config) {
+  let isMinimalistMode = false;
+
+  function handleConfigUpdate(config, minimalist) {
     const regex =
-      /^gps\("package-photoshop", "*(.*?)", "*(.*?)", (.*?), (1|0)\)$/;
+      /^gps\("package-photoshop", "*(.*?)", "*(.*?)", (.*?), (.*?)\)$/;
     if (currentCodeValue != config.script) {
       currentCodeValue = config.script;
       const match = config.script.match(regex);
@@ -25,8 +27,31 @@
         parameterType = match[1] ?? "tool-parameter";
         parameterId = match[2] ?? "";
         parameterValue = match[3] ?? "";
-        isRelativeMode = match[4] == "1";
+        isRelativeMode = match[4] == 1 ? "1" : "0";
+        if (!isInitialized) {
+          isMinimalistMode = minimalist;
+          if (
+            minimalist &&
+            parameterType != "image-adjustment" &&
+            parameterType != "custom-keys"
+          ) {
+            isRelativeMode = "self:get_auto_mode()";
+          }
+        }
         isInitialized = true;
+      }
+    }
+    if (isMinimalistMode !== minimalist) {
+      isMinimalistMode = minimalist;
+      if (minimalist) {
+        if (
+          parameterType != "image-adjustment" &&
+          parameterType != "custom-keys"
+        ) {
+          isRelativeMode = "self:get_auto_mode()";
+        } else {
+          isRelativeMode = "0";
+        }
       }
     }
   }
@@ -44,9 +69,7 @@
     isRelativeMode,
     isInitialized &&
       (function () {
-        var code = `gps("package-photoshop", "${parameterType}", "${parameterId}", ${parameterValue}, ${
-          isRelativeMode ? 1 : 0
-        })`;
+        var code = `gps("package-photoshop", "${parameterType}", "${parameterId}", ${parameterValue}, ${isRelativeMode})`;
         if (currentCodeValue != code) {
           currentCodeValue = code;
           const event = new CustomEvent("updateCode", {
@@ -65,7 +88,7 @@
   bind:this={ref}
 >
   <div class="w-full flex">
-    <div style="width: 50%;">
+    <div class={!isMinimalistMode ? "w-1/2" : "w-full"}>
       <MeltCombo
         title={"Parameter ID"}
         bind:value={parameterId}
@@ -74,16 +97,24 @@
         size={"full"}
       />
     </div>
-    <div style="width: 50%;">
-      <MeltCombo
-        title={"Parameter value"}
-        bind:value={parameterValue}
-        size={"full"}
-      />
-    </div>
+    {#if !isMinimalistMode}
+      <div style="width: 50%;">
+        <MeltCombo
+          title={"Parameter value"}
+          bind:value={parameterValue}
+          size={"full"}
+        />
+      </div>
+    {/if}
   </div>
 
   {#if parameterType != "image-adjustment" && parameterType != "custom-keys"}
-    <MeltCheckbox bind:target={isRelativeMode} title={"Relative Mode"} />
+    <MeltCheckbox
+      target={isRelativeMode == "1"}
+      title={"Relative Mode"}
+      on:change={(e) => {
+        isRelativeMode = e.detail ? "1" : "0";
+      }}
+    />
   {/if}
 </single-parameter-set>

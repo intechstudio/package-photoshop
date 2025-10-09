@@ -1,7 +1,7 @@
 {
   "name": "grid.controller.plugin",
   "private": true,
-  "version": "0.0.2",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "cross-env MODE=dev vite build --watch",
